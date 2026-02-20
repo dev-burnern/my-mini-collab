@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
-  { href: "/setup", label: "Setup" },
-  { href: "/tasks", label: "Tasks" },
-  { href: "/goals", label: "Goals" },
-  { href: "/docs", label: "Docs" },
-  { href: "/insights", label: "Insights" },
+  { href: "/setup", label: "Setup", short: "S" },
+  { href: "/tasks", label: "Tasks", short: "T" },
+  { href: "/goals", label: "Goals", short: "G" },
+  { href: "/docs", label: "Docs", short: "D" },
+  { href: "/insights", label: "Insights", short: "I" },
 ] as const;
 
 type AppNavigationProps = {
@@ -38,6 +38,7 @@ export function AppNavigation({ orientation = "vertical" }: AppNavigationProps) 
             className="nav-link"
             data-active={isActive ? "true" : "false"}
           >
+            <span className="jira-badge">{item.short}</span>
             {item.label}
           </Link>
         );

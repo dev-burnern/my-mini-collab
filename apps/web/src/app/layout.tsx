@@ -3,11 +3,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Collab Zero",
-    template: "%s | Collab Zero",
+    default: "oh-my-collab",
+    template: "%s | oh-my-collab",
   },
   description:
-    "Subscription-free collaboration workspace for capstone and student teams.",
+    "Notion-style documentation and Jira-style execution in one workspace.",
 };
 
 export default function RootLayout({

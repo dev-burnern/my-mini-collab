@@ -1,5 +1,11 @@
 # Frontend Consistency Design (2026-02-20)
 
+## Update (2026-02-20 / Notion + Jira Direction)
+- 프로젝트 표기명을 `oh-my-collab`으로 통일.
+- 디자인 컨셉을 "Notion-like information architecture + Jira-like execution board"로 재정의.
+- 문서/태스크/목표/인사이트 화면을 같은 작업 문맥으로 연결되도록 레이아웃/컴포넌트 패턴 재구성.
+- 메인 컬러는 블루 1종 + 무채색 계열만 사용.
+
 ## 1. Problem Summary
 - 페이지별로 개별 Tailwind 클래스가 흩어져 있어 UI 일관성이 약함.
 - 공통 레이아웃/내비게이션/디자인 토큰이 없어 유지보수 시 재발 가능성이 큼.
@@ -35,10 +41,11 @@
 - 메인 컬러: 블루 계열 1종(`--primary`, `--primary-strong`) + 무채색.
 - 전역 토큰: 배경/표면/경계/타이포/버튼/칩/네비 상태를 `globals.css`에 통합.
 - 레이아웃:
-  - `(app)` 그룹: 사이드바 + 상단 헤더 + 공통 네비게이션.
+  - `(app)` 그룹: Notion 느낌의 정보형 사이드바 + Jira 느낌의 실행형 헤더 + 공통 네비게이션.
   - `(marketing)` 그룹: 온보딩 중심 상단 헤더와 빠른 이동 링크.
 - 페이지 통일:
   - `setup/tasks/goals/docs/insights`에 동일한 카드/헤더/요약 패턴 적용.
+  - 문서 화면은 `Document Space + Review Queue`, 실행 화면은 `보드 + 상태배지` 패턴으로 통일.
 - 안정성:
   - 외부 Google Font fetch 의존 제거(오프라인/제한 네트워크 빌드 안정화).
 
