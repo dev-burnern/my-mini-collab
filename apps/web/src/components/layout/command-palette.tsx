@@ -44,7 +44,12 @@ export function CommandPalette({ items, onClose }: CommandPaletteProps) {
         onClick={onClose}
       />
 
-      <section className="relative z-10 w-full max-w-2xl rounded-2xl border border-[var(--line-default)] bg-[var(--surface-raised)] p-3 shadow-[var(--shadow-pop)]">
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-label="빠른 이동 명령 팔레트"
+        className="relative z-10 w-full max-w-2xl rounded-2xl border border-[var(--line-default)] bg-[var(--surface-raised)] p-3 shadow-[var(--shadow-pop)]"
+      >
         <div className="rounded-xl border border-[var(--line-default)] bg-[var(--surface-base)] px-3 py-2">
           <input
             ref={inputRef}
