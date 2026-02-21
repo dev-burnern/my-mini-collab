@@ -50,5 +50,5 @@ test("요약 페이지와 데드라인 페이지가 운영 데이터를 표시�
 
   await page.goto(`/deadlines?workspaceId=${encodeURIComponent(workspaceId)}`);
   await expect(page.getByRole("heading", { name: "데드라인 대시보드" })).toBeVisible();
-  await expect(page.getByText("데드라인 검증 작업")).toBeVisible();
+  await expect(page.getByRole("cell", { name: "데드라인 검증 작업" })).toBeVisible();
 });

@@ -79,7 +79,8 @@ export default async function DeadlinesPage({ searchParams }: DeadlinesPageProps
     return true;
   });
 
-  const now = Date.now();
+  const referenceNow = new Date();
+  const now = referenceNow.getTime();
   const fourteenDays = now + 14 * 24 * 60 * 60 * 1000;
   const dueTasks = filteredTasks
     .map((task) => ({ task, due: getDueTimestamp(task) }))
@@ -221,7 +222,12 @@ export default async function DeadlinesPage({ searchParams }: DeadlinesPageProps
               </thead>
               <tbody>
                 {filteredTasks
-                  .filter((task) => task.isBlocked || isOverdue(task.dueDate, new Date()))
+                  .filter((task) => {
+                    const due = getDueTimestamp(task);
+                    const isOverdue =
+                      typeof due === "number" && task.status !== "done" && due < now;
+                    return Boolean(task.isBlocked) || isOverdue;
+                  })
                   .map((task) => (
                     <tr key={task.id}>
                       <td className="font-semibold text-[var(--ink-strong)]">{task.title}</td>

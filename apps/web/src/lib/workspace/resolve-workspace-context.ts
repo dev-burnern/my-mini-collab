@@ -57,11 +57,6 @@ export async function resolveWorkspaceContext(preferredWorkspaceId?: string | nu
               workspace.role === "owner" || workspace.role === "admin"
           ) ?? null;
 
-    const selectedMembership =
-      memberships.find(
-        (membership) => membership.workspaceId === selectedWorkspace.workspaceId
-      ) ?? memberships[0];
-
     return {
       userId,
       workspaceId: selectedWorkspace.workspaceId,
