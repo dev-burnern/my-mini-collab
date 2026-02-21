@@ -1,15 +1,41 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
-import type { WorkspaceMembership } from "@/lib/data/collab-store";
+import type {
+  UserWorkspaceSummary,
+  WorkspaceMembership,
+} from "@/lib/data/collab-store";
 import { APP_NAV_ITEMS, ROLE_COPY } from "@/lib/ui/copy";
 
 import { CommandPalette } from "./command-palette";
 import { Sidebar, type SidebarItem } from "./sidebar";
 
 const STORAGE_KEY = "omc.sidebar.collapsed";
+const SIDEBAR_NAV_ID = "app-sidebar-nav";
+
+function ChevronIcon({ direction }: { direction: "left" | "right" }) {
+  const path =
+    direction === "left"
+      ? "M10.5 4.5L6 9l4.5 4.5"
+      : "M7.5 4.5L12 9l-4.5 4.5";
+
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 18 18"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d={path} />
+    </svg>
+  );
+}
 
 function createWorkspaceHref(path: string, workspaceId?: string) {
   if (!workspaceId) return path;
@@ -19,25 +45,31 @@ function createWorkspaceHref(path: string, workspaceId?: string) {
 type AppShellProps = {
   children: React.ReactNode;
   canViewAdmin: boolean;
+  adminWorkspaceId?: string;
   workspaceId?: string;
   workspaceName: string;
   role: WorkspaceMembership["role"] | null;
+  workspaces: UserWorkspaceSummary[];
 };
 
 export function AppShell({
   children,
   canViewAdmin,
+  adminWorkspaceId,
   workspaceId,
   workspaceName,
   role,
+  workspaces,
 }: AppShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.localStorage.getItem(STORAGE_KEY) === "1";
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const canAccessAdmin = canViewAdmin || Boolean(adminWorkspaceId);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -58,9 +90,12 @@ export function AppShell({
     () =>
       APP_NAV_ITEMS.map((item) => ({
         ...item,
-        href: createWorkspaceHref(item.path, workspaceId),
+        href: createWorkspaceHref(
+          item.path,
+          item.adminOnly ? adminWorkspaceId ?? workspaceId : workspaceId
+        ),
       })),
-    [workspaceId]
+    [adminWorkspaceId, workspaceId]
   );
 
   const currentLabel = useMemo(() => {
@@ -74,6 +109,7 @@ export function AppShell({
 
   const sidebarWidthClass = collapsed ? "lg:w-20" : "lg:w-72";
   const roleLabel = role ? ROLE_COPY[role] : "권한 미확인";
+  const toggleLabel = collapsed ? "사이드바 펼치기" : "사이드바 접기";
 
   const toggleCollapse = () => {
     setCollapsed((prev) => {
@@ -81,6 +117,12 @@ export function AppShell({
       window.localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
       return next;
     });
+  };
+
+  const changeWorkspace = (nextWorkspaceId: string) => {
+    const target = createWorkspaceHref("/overview", nextWorkspaceId);
+    router.push(target);
+    setMobileOpen(false);
   };
 
   return (
@@ -100,17 +142,21 @@ export function AppShell({
             </div>
             <button
               type="button"
-              aria-label="사이드바 접기"
-              className="rounded-md border border-[var(--line-default)] px-2 py-1 text-xs text-[var(--ink-default)] hover:bg-[var(--surface-soft)]"
+              aria-label={toggleLabel}
+              aria-controls={SIDEBAR_NAV_ID}
+              aria-expanded={!collapsed}
+              title={toggleLabel}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--line-default)] text-[var(--ink-default)] transition hover:bg-[var(--surface-soft)]"
               onClick={toggleCollapse}
             >
-              {collapsed ? ">" : "<"}
+              <ChevronIcon direction={collapsed ? "right" : "left"} />
             </button>
           </div>
 
           <Sidebar
+            id={SIDEBAR_NAV_ID}
             collapsed={collapsed}
-            canViewAdmin={canViewAdmin}
+            canViewAdmin={canAccessAdmin}
             items={navItems}
           />
         </aside>
@@ -137,6 +183,22 @@ export function AppShell({
             <div className="hidden items-center gap-2 md:flex">
               <span className="status-chip">{workspaceName}</span>
               <span className="status-chip">{roleLabel}</span>
+              {workspaces.length > 1 && (
+                <label className="inline-flex items-center gap-2 rounded-xl border border-[var(--line-default)] bg-[var(--surface-base)] px-2 py-1 text-xs text-[var(--ink-default)]">
+                  <span>워크스페이스</span>
+                  <select
+                    value={workspaceId ?? workspaces[0]?.workspaceId ?? ""}
+                    onChange={(event) => changeWorkspace(event.target.value)}
+                    className="field-input py-1 text-xs"
+                  >
+                    {workspaces.map((workspace) => (
+                      <option key={workspace.workspaceId} value={workspace.workspaceId}>
+                        {workspace.workspaceName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <button
                 type="button"
                 className="btn-secondary py-1.5 text-xs"
@@ -183,7 +245,7 @@ export function AppShell({
             </div>
             <Sidebar
               collapsed={false}
-              canViewAdmin={canViewAdmin}
+              canViewAdmin={canAccessAdmin}
               items={navItems}
               onNavigate={() => setMobileOpen(false)}
             />
@@ -193,7 +255,7 @@ export function AppShell({
 
       {commandOpen && (
         <CommandPalette
-          items={navItems.filter((item) => !item.adminOnly || canViewAdmin)}
+          items={navItems.filter((item) => !item.adminOnly || canAccessAdmin)}
           onClose={() => setCommandOpen(false)}
         />
       )}

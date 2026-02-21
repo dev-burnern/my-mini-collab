@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type SessionSourceResult = {
@@ -36,10 +38,16 @@ export async function getSessionUserIdFrom(source: SessionUserSource) {
 }
 
 export async function getSessionUserId(request?: Request) {
+  const bypassEnabled = process.env.E2E_AUTH_BYPASS === "1";
   const bypassUserId =
-    request &&
-    readBypassUserIdFromRequest(request, process.env.E2E_AUTH_BYPASS === "1");
+    request && readBypassUserIdFromRequest(request, bypassEnabled);
   if (bypassUserId) return bypassUserId;
+
+  if (!request && bypassEnabled) {
+    const cookieStore = await cookies();
+    const bypassFromCookieStore = cookieStore.get("e2e-user-id")?.value;
+    if (bypassFromCookieStore) return bypassFromCookieStore;
+  }
 
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.auth.getUser();
