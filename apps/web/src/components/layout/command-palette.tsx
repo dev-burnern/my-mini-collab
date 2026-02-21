@@ -6,25 +6,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { SidebarItem } from "./sidebar";
 
 type CommandPaletteProps = {
-  open: boolean;
   items: SidebarItem[];
   onClose: () => void;
 };
 
-export function CommandPalette({ open, items, onClose }: CommandPaletteProps) {
+export function CommandPalette({ items, onClose }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (!open) {
-      setQuery("");
-      return;
-    }
     inputRef.current?.focus();
-  }, [open]);
+  }, []);
 
   useEffect(() => {
-    if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -33,7 +27,7 @@ export function CommandPalette({ open, items, onClose }: CommandPaletteProps) {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [onClose, open]);
+  }, [onClose]);
 
   const filteredItems = useMemo(() => {
     if (!query.trim()) return items;
@@ -42,8 +36,6 @@ export function CommandPalette({ open, items, onClose }: CommandPaletteProps) {
       `${item.label} ${item.shortcut}`.toLowerCase().includes(normalizedQuery)
     );
   }, [items, query]);
-
-  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-40 flex items-start justify-center px-4 pt-[10vh]">

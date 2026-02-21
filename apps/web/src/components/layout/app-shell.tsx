@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import type { WorkspaceMembership } from "@/lib/data/collab-store";
 import { APP_NAV_ITEMS, ROLE_COPY } from "@/lib/ui/copy";
@@ -32,14 +32,12 @@ export function AppShell({
   role,
 }: AppShellProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem(STORAGE_KEY) === "1";
+  });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
-
-  useEffect(() => {
-    setCollapsed(window.localStorage.getItem(STORAGE_KEY) === "1");
-  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -56,15 +54,13 @@ export function AppShell({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const workspaceIdFromUrl = searchParams.get("workspaceId") ?? workspaceId;
-
   const navItems = useMemo<SidebarItem[]>(
     () =>
       APP_NAV_ITEMS.map((item) => ({
         ...item,
-        href: createWorkspaceHref(item.path, workspaceIdFromUrl ?? undefined),
+        href: createWorkspaceHref(item.path, workspaceId),
       })),
-    [workspaceIdFromUrl]
+    [workspaceId]
   );
 
   const currentLabel = useMemo(() => {
@@ -195,11 +191,12 @@ export function AppShell({
         </div>
       )}
 
-      <CommandPalette
-        open={commandOpen}
-        items={navItems.filter((item) => !item.adminOnly || canViewAdmin)}
-        onClose={() => setCommandOpen(false)}
-      />
+      {commandOpen && (
+        <CommandPalette
+          items={navItems.filter((item) => !item.adminOnly || canViewAdmin)}
+          onClose={() => setCommandOpen(false)}
+        />
+      )}
     </div>
   );
 }

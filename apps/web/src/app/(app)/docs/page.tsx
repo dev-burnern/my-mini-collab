@@ -31,6 +31,11 @@ function countUpdatedThisWeek(docs: Doc[]) {
   ).length;
 }
 
+function getTemplateTitle(templateKey: Doc["templateKey"]) {
+  if (templateKey === "custom") return "사용자 정의";
+  return DOC_TEMPLATES[templateKey].title;
+}
+
 export default async function DocsPage({ searchParams }: DocsPageProps) {
   const resolvedParams = await searchParams;
   const preferredWorkspaceId = pickSingleParam(resolvedParams.workspaceId);
@@ -109,7 +114,7 @@ export default async function DocsPage({ searchParams }: DocsPageProps) {
                     <td>
                       <p className="font-semibold text-[var(--ink-strong)]">{doc.title}</p>
                     </td>
-                    <td>{DOC_TEMPLATES[doc.templateKey]?.title ?? doc.templateKey}</td>
+                    <td>{getTemplateTitle(doc.templateKey)}</td>
                     <td>{formatDateTimeLabel(doc.updatedAt)}</td>
                     <td>{doc.updatedBy}</td>
                   </tr>
