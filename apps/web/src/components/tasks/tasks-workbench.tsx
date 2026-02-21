@@ -106,11 +106,11 @@ export function TasksWorkbench({ workspaceId, initialTasks }: TasksWorkbenchProp
     window.localStorage.setItem(storageKey, JSON.stringify(savedViews));
   }, [savedViews, storageKey]);
 
-  const now = new Date();
   const hasActiveFilters =
     assigneeFilter !== "all" || priorityFilter !== "all" || riskFilter !== "all";
 
   const filteredTasks = useMemo(() => {
+    const now = new Date();
     return tasks.filter((task) => {
       if (assigneeFilter !== "all" && task.assigneeId !== assigneeFilter) return false;
       if (priorityFilter !== "all" && task.priority !== priorityFilter) return false;
@@ -119,7 +119,7 @@ export function TasksWorkbench({ workspaceId, initialTasks }: TasksWorkbenchProp
       if (riskFilter === "blocked" && !task.isBlocked) return false;
       return true;
     });
-  }, [assigneeFilter, now, priorityFilter, riskFilter, tasks]);
+  }, [assigneeFilter, priorityFilter, riskFilter, tasks]);
 
   const backlogTasks = useMemo(() => sortBacklog(filteredTasks), [filteredTasks]);
   const sprintGroups = useMemo(() => {
